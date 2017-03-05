@@ -113,6 +113,17 @@ int LRU::Put(int key, Node node)
     }else{
         cout<<"命中,直接修改!\n";
         *temp = node; //修改值,但这里没有移到 lru_list 头
+
+        //调整顺序
+        for(list<Node*>::iterator it = this->lru_list.begin(); it!=this->lru_list.end(); it++)
+        {
+            if (temp->key == (*it)->key){
+                this->lru_list.erase(it);
+                break; //这里break 了,不用担心迭代失效
+            }
+        }
+        this->lru_list.push_front(temp); //最近访问的下次可能用到
+
     }
     return 0;
 }
@@ -121,8 +132,18 @@ const Node* LRU::Get(int key)
 {
 
     cout<<__func__<<endl;
-    const Node* temp = NULL;
+    Node* temp = NULL;
     temp = this->lru_map[key];
+
+        //调整顺序
+    for(list<Node*>::iterator it = this->lru_list.begin(); it!=this->lru_list.end();it++)
+    {
+        if (temp->key == (*it)->key){
+            this->lru_list.erase(it);
+            break; //这里break 了,不用担心迭代失效
+        }
+    }
+    this->lru_list.push_front(temp); //最近访问的下次可能用到
     return temp;
 }
 
@@ -150,7 +171,7 @@ void LRU::Print()
 
 int main()
 {
-    LRU lru(10);
+    LRU lru(3);
     Node node(1,1);
     lru.Put(1, node);
 
@@ -161,6 +182,8 @@ int main()
     Node node3(3,3);
     lru.Put(3, node3);
 
+    lru.Get(2);
+
 
     lru.Put(2, node2);
 
@@ -169,6 +192,9 @@ int main()
 
     Node node4(4,4);
     lru.Put(4, node4);
+
+
+    lru.Get(2);
 
     lru.Print();
     //cout << "Hello world!!" << endl;
